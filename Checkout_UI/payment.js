@@ -3,16 +3,23 @@ import './../../../sass/components/payment.scss';
 import productImage from '../../../../resources/sass/img/tuf.svg';
 import gcashImage from '../../../../resources/sass/img/cashG.svg';
 import Header from '../HeaderContent/header';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Payment = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Get cartItems, subtotal, and address from the location state
+  const { cartItems = [], subtotal = 0, address = {} } = location.state || {};
+
+  // Initialize billing details with address data if available
   const [billingDetails, setBillingDetails] = useState({
     firstName: '',
     lastName: '',
-    country: 'Philippines',
-    streetAddress: '',
-    townCity: '',
-    state: '',
+    country: address.country || 'Philippines',
+    streetAddress: address.streetAddress || '',
+    townCity: address.city || '',
+    state: address.state || '',
     mobilePhone: '',
     orderNotes: ''
   });
@@ -34,8 +41,6 @@ const Payment = () => {
     Philippines: ['Agusan Del Norte', 'Cebu', 'Davao del Sur'],
     US: ['California', 'Texas', 'New York']
   };
-
-  const navigate = useNavigate();
 
   const handleBillingChange = (e) => {
     const { name, value } = e.target;
@@ -71,18 +76,21 @@ const Payment = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Order placed:', { billingDetails, visibleSections, creditCardDetails });
+    console.log('Order placed:', { billingDetails, visibleSections, creditCardDetails, cartItems });
     navigate('/order-confirmation');
   };
 
+  // Update order summary based on cartItems and subtotal
   const orderSummary = {
-    product: {
+    products: cartItems.length > 0 ? cartItems : [{
       name: 'ASUS TUF GAMING A14',
-      price: 2620
-    },
+      price: 2620,
+      quantity: 1,
+      image: productImage
+    }],
     shippingFee: 80,
-    subtotal: 2620,
-    total: 2620 + 80
+    subtotal: subtotal || 2620,
+    total: (subtotal || 2620) + 80
   };
 
   return (
@@ -207,12 +215,15 @@ const Payment = () => {
           <div className="order-summary">
             <div className="order-section">
               <h2 className="section-title">Your Order</h2>
-              <div className="order-item">
-                <img src={productImage} alt={orderSummary.product.name} className="product-image" />
-                <div className="product-details">
-                  <div className="product-name">{orderSummary.product.name}</div>
+              {orderSummary.products.map((product, index) => (
+                <div className="order-item" key={index}>
+                  <img src={product.image || productImage} alt={product.name} className="product-image" />
+                  <div className="product-details">
+                    <div className="product-name">{product.name}</div>
+                    <div className="product-quantity">Qty: {product.quantity}</div>
+                  </div>
                 </div>
-              </div>
+              ))}
 
               <div className="summary-row">
                 <span className="summary-label">Estimated shipping fee</span>

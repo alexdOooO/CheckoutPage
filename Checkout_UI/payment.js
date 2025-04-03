@@ -77,7 +77,7 @@ const Payment = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Order placed:', { billingDetails, visibleSections, creditCardDetails, cartItems });
-    navigate('/order-confirmation');
+    navigate('/complete');
   };
 
   // Update order summary based on cartItems and subtotal
